@@ -16,7 +16,7 @@ TARGET = confused_gpt
 # default target
 all: $(TARGET)
 # build target
-$(TARGET): $(OBJS_C) $(OBJS_CPP)
+$(TARGET): $(OBJS_C)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
