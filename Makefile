@@ -18,13 +18,8 @@ all: $(TARGET)
 # build target
 $(TARGET): $(OBJS_C) $(OBJS_CPP)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
-# compile C source files
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
-# compile C++ source files
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-# clean target
 clean:
 	rm -f $(OBJS_C) $(OBJS_CPP) $(TARGET)
 # phony targets
