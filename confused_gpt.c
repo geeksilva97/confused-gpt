@@ -4,6 +4,7 @@
 
 // #define FILE_PATH "the-verdict.txt"
 #define FILE_PATH "hello.txt"
+#define TEMPORARY_BUFFER_SIZE 5
 
 typedef struct {
   char **items;
@@ -52,42 +53,47 @@ int main() {
     return 1;
   }
 
-  int char_count = 0;
+  int word_capacity = TEMPORARY_BUFFER_SIZE;
+  char *word_buf = malloc(word_capacity);
+  int length = 0;
   char ch;
   while ((ch = fgetc(file)) != EOF) {
-    if (ch == ' ') {
-      int pos = ftell(file);
-      char token_value[char_count + 1];
-      token_value[char_count] = '\0';
-      fseek(file, pos - char_count - 1, SEEK_SET);
-      fgets(token_value, char_count + 1, file);
-      fseek(file, pos, SEEK_SET);
+    if (ch == ' ' || ch == '\n') {
+      if (length > 0) {
+        word_buf[length] = '\0';
+        push_token(tokens, word_buf);
+        length = 0;
+        continue;
+      }
+    }
 
-      push_token(tokens, token_value);
+    // ignore spaces from the beggining of the words
+    if (ch == ' ') continue;
 
-      char_count = 0;
+    if (ch == '.' || ch == '?' || ch == '!' || ch == '(' || ch == ')' || ch == '"' || ch == '\'' || ch == '-' || ch == ';' || ch == ':') {
+      push_token(tokens, word_buf);
+      push_token(tokens, &ch);
+      length = 0;
       continue;
     }
 
-    char_count++;
+    if (length >= word_capacity - 1) {
+      word_capacity *= 2;
+      word_buf = realloc(word_buf, word_capacity);
+    }
+
+    word_buf[length] = ch;
+
+    length++;
   }
 
-  if (char_count > 0) {
-    int pos = ftell(file);
-    char token_value[char_count + 1];
-    token_value[char_count] = '\0';
-    fseek(file, pos - char_count, SEEK_SET);
-    fgets(token_value, char_count + 1, file);
-    fseek(file, pos, SEEK_SET);
-
-    push_token(tokens, token_value);
+  printf("%d tokens\n", tokens->length);
+  for (int i = 0; i < tokens->length; ++i) {
+    char *token_description = tokens->items[i];
+    printf("Token [%d]: %s\n", i, token_description);
   }
 
-  printf("Total tokens: %d\n", tokens->length);
-  for (int i = 0; i < tokens->length; i++) {
-    printf("Token %d: %s\n", i, get_token(tokens, i));
-  }
-
+  free(word_buf);
   fclose(file);
 
   return 0;
